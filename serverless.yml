@@ -1,0 +1,64 @@
+service: aws-node-api-prueba
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: sa-east-1
+  environment:
+    TABLE_NAME:
+      Ref: TaskTable
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:sa-east-1:493034114011:table/TaskTable
+
+functions:
+  listTasks:
+    handler: src/task/get.get
+    events:
+      - httpApi:
+          path: /
+          method: get
+  getTask:
+    handler: src/task/getById.getById
+    events:
+      - httpApi:
+          path: /{id}
+          method: get
+  createTask:
+    handler: src/task/add.add
+    events:
+      - httpApi:
+          path: /
+          method: post
+  updateTask:
+    handler: src/task/update.update
+    events:
+      - httpApi:
+          path: /{id}
+          method: put
+  deleteTask:
+    handler: src/task/delete.delete
+    events:
+      - httpApi:
+          path: /{id}
+          method: delete
+
+resources:
+  Resources:
+    TaskTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TaskTable
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
